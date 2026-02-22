@@ -84,7 +84,7 @@
                 <!-- 英文單字顯示區 -->
                 <div class="flex-none flex flex-col items-center justify-center px-6 md:px-10 pt-2 pb-2 md:pb-4">
                     <div class="flex items-center justify-center gap-4">
-                        <h2 id="word-display" class="text-5xl md:text-[4.5rem] lg:text-[5.5rem] font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 tracking-tight text-center break-words select-none drop-shadow-sm leading-normal pb-2 md:pb-4">
+                        <h2 id="word-display" class="text-5xl md:text-[4.5rem] lg:text-[5.5rem] font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 tracking-tight text-center break-words select-none drop-shadow-sm leading-normal">
                             Word
                         </h2>
                         <!-- 發音喇叭按鈕 -->
@@ -95,6 +95,10 @@
                                 <path d="M15.932 7.757a.75.75 0 011.061 0 4.5 4.5 0 010 6.364.75.75 0 01-1.06-1.061 3 3 0 000-4.243.75.75 0 010-1.06z" />
                             </svg>
                         </button>
+                    </div>
+                    <!-- 新增的單字片語區塊 (加深顏色並準備顯示分離的內容) -->
+                    <div id="phrase-display" class="text-xl md:text-2xl lg:text-3xl font-bold tracking-wide mt-1 md:mt-2 text-center select-none">
+                        phrase
                     </div>
                 </div>
 
@@ -122,26 +126,26 @@
     <script>
         // --- 題庫資料 ---
         const rawQuizData = [
-            { word: "adventure", answer: "冒險", distractors: ["探索", "奇蹟", "挑戰"] },
-            { word: "analog", answer: "類比的", distractors: ["數位的", "虛擬的", "機械的"] },
-            { word: "carpenter", answer: "木匠", distractors: ["鐵匠", "建築師", "雕刻家"] },
-            { word: "controller", answer: "控制器", distractors: ["顯示器", "處理器", "感測器"] },
-            { word: "crash", answer: "當機 / 碰撞", distractors: ["摩擦", "故障", "爆炸"] },
-            { word: "cultural", answer: "文化的", distractors: ["歷史的", "傳統的", "社會的"] },
-            { word: "designer", answer: "設計師", distractors: ["藝術家", "工程師", "攝影師"] },
-            { word: "icon", answer: "圖示", distractors: ["標籤", "游標", "密碼"] },
-            { word: "landlord", answer: "房東", distractors: ["租客", "地主", "守衛"] },
-            { word: "legal", answer: "合法的", distractors: ["道德的", "官方的", "規定的"] },
-            { word: "mushroom", answer: "蘑菇", distractors: ["蔬菜", "蘿蔔", "堅果"] },
-            { word: "mustache", answer: "鬍鬚", distractors: ["眉毛", "睫毛", "鬢角"] },
-            { word: "overalls", answer: "吊帶褲 / 工作服", distractors: ["外套", "圍裙", "雨衣"] },
-            { word: "plumber", answer: "水管工", distractors: ["電工", "泥水匠", "清潔工"] },
-            { word: "side-scrolling", answer: "橫向捲軸的", distractors: ["第一人稱的", "開放世界的", "回合制的"] },
-            { word: "superstar", answer: "超級巨星", distractors: ["製作人", "評論家", "導演"] },
-            { word: "symbol", answer: "象徵 / 符號", distractors: ["標語", "訊號", "記號"] },
-            { word: "theme", answer: "主題", distractors: ["結論", "背景", "大綱"] },
-            { word: "three-dimensional", answer: "三維的 / 立體的", distractors: ["透明的", "高畫質的", "互動的"] },
-            { word: "warehouse", answer: "倉庫", distractors: ["工廠", "辦公室", "車庫"] }
+            { word: "adventure", answer: "冒險", distractors: ["探索", "奇蹟", "挑戰"], phrase: "go on an adventure (去冒險)" },
+            { word: "analog", answer: "類比的", distractors: ["數位的", "虛擬的", "機械的"], phrase: "analog signal (類比訊號)" },
+            { word: "carpenter", answer: "木匠", distractors: ["鐵匠", "建築師", "雕刻家"], phrase: "a skilled carpenter (技術熟練的木匠)" },
+            { word: "controller", answer: "控制器", distractors: ["顯示器", "處理器", "感測器"], phrase: "wireless controller (無線控制器)" },
+            { word: "crash", answer: "當機 / 碰撞", distractors: ["摩擦", "故障", "爆炸"], phrase: "system crash (系統當機)" },
+            { word: "cultural", answer: "文化的", distractors: ["歷史的", "傳統的", "社會的"], phrase: "cultural differences (文化差異)" },
+            { word: "designer", answer: "設計師", distractors: ["藝術家", "工程師", "攝影師"], phrase: "fashion designer (服裝設計師)" },
+            { word: "icon", answer: "圖示", distractors: ["標籤", "游標", "密碼"], phrase: "click the icon (點擊圖示)" },
+            { word: "landlord", answer: "房東", distractors: ["租客", "地主", "守衛"], phrase: "pay rent to the landlord (付房租)" },
+            { word: "legal", answer: "合法的", distractors: ["道德的", "官方的", "規定的"], phrase: "take legal action (採取法律行動)" },
+            { word: "mushroom", answer: "蘑菇", distractors: ["蔬菜", "蘿蔔", "堅果"], phrase: "wild mushroom (野生蘑菇)" },
+            { word: "mustache", answer: "鬍鬚", distractors: ["眉毛", "睫毛", "鬢角"], phrase: "grow a mustache (留鬍子)" },
+            { word: "overalls", answer: "吊帶褲 / 工作服", distractors: ["外套", "圍裙", "雨衣"], phrase: "a pair of overalls (一件吊帶褲)" },
+            { word: "plumber", answer: "水管工", distractors: ["電工", "泥水匠", "清潔工"], phrase: "call a plumber (叫水管工)" },
+            { word: "side-scrolling", answer: "橫向捲軸的", distractors: ["第一人稱的", "開放世界的", "回合制的"], phrase: "a side-scrolling game (橫向捲軸遊戲)" },
+            { word: "superstar", answer: "超級巨星", distractors: ["製作人", "評論家", "導演"], phrase: "a global superstar (全球超級巨星)" },
+            { word: "symbol", answer: "象徵 / 符號", distractors: ["標語", "訊號", "記號"], phrase: "a symbol of peace (和平的象徵)" },
+            { word: "theme", answer: "主題", distractors: ["結論", "背景", "大綱"], phrase: "the main theme (主要主題)" },
+            { word: "three-dimensional", answer: "三維的 / 立體的", distractors: ["透明的", "高畫質的", "互動的"], phrase: "three-dimensional space (三維空間)" },
+            { word: "warehouse", answer: "倉庫", distractors: ["工廠", "辦公室", "車庫"], phrase: "an empty warehouse (空蕩的倉庫)" }
         ];
 
         // --- 洗牌演算法 (Fisher-Yates) ---
@@ -169,6 +173,7 @@
             totalQuestionNum: document.getElementById('total-question-num'),
             scoreDisplay: document.getElementById('score-display'),
             wordDisplay: document.getElementById('word-display'),
+            phraseDisplay: document.getElementById('phrase-display'),
             optionsGrid: document.getElementById('options-grid'),
             optionsContainer: document.getElementById('options-container'),
             bottomBar: document.getElementById('bottom-bar'),
@@ -220,8 +225,16 @@
             ui.currentQuestionNum.textContent = currentIndex + 1;
             ui.scoreDisplay.textContent = score;
             
-            // 更新單字
+            // 更新單字與片語
             ui.wordDisplay.textContent = currentQ.word;
+            
+            // 利用正規表達式分離英文片語與中文解釋
+            const phraseMatch = currentQ.phrase.match(/(.+?)\s*\((.+?)\)/);
+            const enText = phraseMatch ? phraseMatch[1] : currentQ.phrase;
+            const zhText = phraseMatch ? `(${phraseMatch[2]})` : '';
+            
+            // 初始狀態只顯示英文(深灰色)，中文部分設為透明隱藏 (opacity-0)，保留排版空間不跳動
+            ui.phraseDisplay.innerHTML = `<span class="text-slate-600">${enText}</span> <span id="phrase-zh" class="opacity-0 transition-opacity duration-500 text-indigo-600 ml-1 md:ml-2">${zhText}</span>`;
             
             // 隱藏底部欄位
             ui.bottomBar.classList.add('translate-y-full');
@@ -272,6 +285,12 @@
                 } else {
                     btn.className += " bg-slate-100 border-slate-200 text-slate-400 opacity-50 grayscale cursor-default";
                 }
+            }
+
+            // 作答後，顯示中文片語解釋
+            const phraseZhEl = document.getElementById('phrase-zh');
+            if (phraseZhEl) {
+                phraseZhEl.classList.remove('opacity-0');
             }
 
             // 顯示底部欄位
