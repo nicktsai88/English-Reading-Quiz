@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Learning HQ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&family=Noto+Serif+TC:wght@600;900&display=swap" rel="stylesheet">
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Import Map for Firebase -->
+    <script type="importmap">
+      {
+        "imports": {
+          "firebase/app": "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js",
+          "firebase/firestore": "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js",
+          "firebase/auth": "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js"
+        }
+      }
+    </script>
+
+    <style>
+        :root {
+            --bg: #f5f7ff;
+            --text-main: #1a237e;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: var(--bg);
+            background-image: radial-gradient(#e8eaf6 1px, transparent 1px);
+            background-size: 20px 20px;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            color: var(--text-main);
+        }
+
+        h1, h2, .font-serif { font-family: 'Noto Serif TC', serif; }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            max-width: 900px;
+        }
+
+        .header h1 {
+            font-family: 'Noto Serif TC', serif;
+            color: var(--text-main);
+            font-size: 3.5em; 
+            font-weight: 900; 
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.05);
+        }
+
+        .header p {
+            color: #5c6bc0;
+            font-size: 1.1em;
+            margin-bottom: 20px;
+        }
+
+        .home-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, #3f51b5 0%, #5c6bc0 100%);
+            color: white;
+            padding: 15px 50px;
+            border-radius: 9999px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.3em;
+            box-shadow: 0 6px 15px rgba(63, 81, 181, 0.3);
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+        .home-btn:hover { 
+            transform: translateY(-3px); 
+            box-shadow: 0 8px 20px rgba(63, 81, 181, 0.4); 
+        }
+
+        .app-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            width: 100%;
+            max-width: 1300px;
+            margin-bottom: 40px;
+        }
+
+        .app-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            text-decoration: none;
+            color: #333;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            border-top: 6px solid #ccc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            border: 1px solid rgba(0,0,0,0.05);
+            min-height: 200px;
+        }
+
+        .app-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+        }
+
+        /* Completed state styling is now handled dynamically in React */
+        .app-card.completed {
+            transform: scale(1.02);
+            background-color: #ffffff; 
+        }
+
+        /* 舊的圖示樣式 (Fallback use) */
+        .card-icon-wrapper {
+            font-size: 2.2em;
+            margin-bottom: 12px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f5f5f5;
+            overflow: hidden;
+        }
+
+        .card-title {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 1.1em;
+            font-weight: 700;
+            margin-bottom: 10px;
+            line-height: 1.4;
+            color: #444;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-desc {
+            font-size: 0.8em;
+            color: #888;
+            background: #f9f9f9;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-family: monospace;
+            margin-top: auto;
+        }
+
+        .card-checkbox {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 26px;
+            height: 26px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            z-index: 20; /* Ensure it stays above images */
+        }
+        
+        .card-checkbox:hover {
+            transform: scale(1.1);
+        }
+
+        .card-checkbox.checked {
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+        }
+        .status-loading { background-color: #fdd835; box-shadow: 0 0 5px #fdd835; }
+        .status-success { background-color: #4caf50; box-shadow: 0 0 5px #4caf50; }
+        .status-error { background-color: #ef5350; box-shadow: 0 0 5px #ef5350; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+
+        .section-divider {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            margin: 60px 0 30px 0;
+            color: #333;
+            font-family: 'Noto Serif TC', serif;
+            font-size: 1.8em;
+            font-weight: 900;
+            text-shadow: 1px 1px 0px rgba(0,0,0,0.05);
+        }
+        .section-divider::before, .section-divider::after {
+            content: "";
+            flex: 1;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        .section-divider::before { margin-right: 20px; }
+        .section-divider::after { margin-left: 20px; }
+
+        .quick-user-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            border: 2px solid #c5cae9;
+            color: #283593;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1em;
+            transition: all 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .quick-user-btn:hover {
+            background: #e8eaf6;
+            border-color: #3f51b5;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        /* 新增：鎖定狀態的樣式 */
+        .card-locked {
+            filter: grayscale(100%); /* 變成黑白 */
+            opacity: 0.6;           /* 變半透明 */
+            pointer-events: none;   /* 禁止點擊 */
+            cursor: default;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="root"></div>
+
+    <script type="text/babel" data-type="module">
+        import { initializeApp } from "firebase/app";
+        import { getFirestore, doc, setDoc, updateDoc, getDoc, onSnapshot, arrayUnion } from "firebase/firestore";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "firebase/auth";
+
+        // ==========================================
+        // 1. Firebase Config
+        // ==========================================
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyCan2_Rc26HsLkOPr0i5QrgdjAYyqcigJ0",
+            authDomain: "english-reading-6b506.firebaseapp.com",
+            projectId: "english-reading-6b506",
+            storageBucket: "english-reading-6b506.firebasestorage.app",
+            messagingSenderId: "494747176273",
+            appId: "1:494747176273:web:585487fadb29b2e5e2d770",
+            measurementId: "G-4JD6R9MRPQ"
+        };
+
+        const COLLECTION_NAME = 'English-Reading-Quiz'; // Changed as requested
+        const DOC_GLOBAL = 'global';
+
+        let app, db, auth;
+
+        try {
+            if (firebaseConfig.apiKey) {
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+            }
+        } catch (e) {
+            console.error("Firebase init failed:", e);
+        }
+
+        // ==========================================
+        // 2. Data Structure (15 Categories)
+        // ==========================================
+        const generateRawData = () => {
+            const sections = [
+                { 
+                    name: "Category 1: Gaming & Esports", 
+                    color: "#6200ea", // Deep Purple
+                    lightColor: "#ede7f6", 
+                    icon: "🎮", 
+                    titles: [
+                        "The History of Mario (瑪利歐的進化史)", "How to Go Pro: Life of an Esports Player (如何成為職業電競選手？)", "Minecraft: Building a Virtual World (麥塊：打造虛擬世界)", "The Most Expensive Virtual Items Ever Sold (史上賣最貴的虛擬寶物)", "Why Do We Rage Quit? (為什麼玩遊戲會爆氣？心理學分析)", "Top 5 Cheat Codes in Gaming History (遊戲史上最強的 5 個作弊碼)", "VR Gaming: The Future or a Fad? (VR 遊戲：未來趨勢還是曇花一現？)", "The Story Behind League of Legends (英雄聯盟背後的故事)", "Game Glitches That Became Features (變成遊戲特色的 Bug)", "How Game Developers Make You Addicted (遊戲開發者如何讓你上癮)"
+                    ] 
+                },
+                { 
+                    name: "Category 2: Sci-Fi, Tech & AI", 
+                    color: "#00b0ff", // Light Blue
+                    lightColor: "#e1f5fe", 
+                    icon: "🤖", 
+                    titles: [
+                        "Will AI Take Your Future Job? (AI 會搶走你未來的工作嗎？)", "Living on Mars: Elon Musk's Dream (火星移民：馬斯克的夢想)", "The Dark Web: What is it? (暗網是什麼？)", "Flying Cars: Are We There Yet? (飛天車離我們還有多遠？)", "How Hackers Steal Your Passwords (駭客如何偷走你的密碼)", "Is Time Travel Possible? (時光旅行真的可行嗎？)", "The Science of Black Holes (黑洞的科學)", "Robots That Can Feel Pain (會有痛覺的機器人)", "5 Gadgets You Wish You Had (5 個你超想擁有的黑科技小物)", "ChatGPT: Friend or Enemy? (ChatGPT：是朋友還是敵人？)"
+                    ] 
+                },
+                { 
+                    name: "Category 3: Mystery, Horror & Urban Legends", 
+                    color: "#d50000", // Red
+                    lightColor: "#ffebee", 
+                    icon: "👻", 
+                    titles: [
+                        "The Mystery of the Bermuda Triangle (百慕達三角洲之謎)", "Real-Life Zombies in Nature (自然界真實存在的殭屍生物)", "The Legend of the Kraken (北歐海怪克拉肯：深海巨獸)", "5 Creepiest Urban Legends from Japan (5 個最毛的日本都市傳說)", "The Dyatlov Pass Incident (迪亞特洛夫事件：雪山離奇死亡之謎)", "Do Aliens Exist? The Area 51 Secrets (外星人存在嗎？51 區的秘密)", "The Curse of the Pharaohs (法老的詛咒)", "Sleep Paralysis: A Demon in Your Room? (鬼壓床：房間裡的惡魔？)", "The Mystery of the Nazca Lines (納斯卡線之謎：給外星人看的畫？)", "The Curse of the Hope Diamond (希望鑽石的詛咒)"
+                    ] 
+                },
+                { 
+                    name: "Category 4: Sports, Sneakers & Extreme", 
+                    color: "#ff6d00", // Orange
+                    lightColor: "#fff3e0", 
+                    icon: "🏀", 
+                    titles: [
+                        "The Mamba Mentality: Kobe Bryant (曼巴精神：Kobe Bryant)", "Why Are Air Jordans So Expensive? (為什麼 AJ 鞋這麼貴？)", "Parkour: The Art of Movement (跑酷：移動的藝術)", "The Fastest Man Alive: Usain Bolt (地表最速男：Usain Bolt)", "The Rise of UFC: MMA Fighting (UFC 的崛起：綜合格鬥)", "F1 Racing: Speed and Science (F1 賽車：速度與科學)", "How Athletes Train Their Brains (頂尖運動員如何訓練大腦)", "The Most Dangerous Sports in the World (世界上最危險的運動)", "Sneaker Culture: Collecting for Cash (球鞋文化：炒鞋賺錢？)", "Messi vs. Ronaldo: The GOAT Debate (梅西 vs C羅：誰是史上最佳？)"
+                    ] 
+                },
+                { 
+                    name: "Category 5: Movies, Anime & Pop Culture", 
+                    color: "#c51162", // Pink
+                    lightColor: "#fce4ec", 
+                    icon: "🎬", 
+                    titles: [
+                        "Why Do Superheroes Wear Capes? (為什麼超級英雄要穿披風？)", "The Philosophy of Naruto (火影忍者的哲學)", "Godzilla: Monster or Hero? (哥吉拉：怪獸還是英雄？)", "How Special Effects Are Made (CGI) (電影特效是怎麼做出來的？)", "Marvel vs. DC: The Ultimate Battle (漫威 vs DC：終極對決)", "Studio Ghibli: Magic in Animation (吉卜力工作室：動畫的魔法)", "Why One Piece is the #1 Anime (為什麼航海王是第一名動漫？)", "YouTubers Who Became Millionaires (變成百萬富翁的 YouTuber 們)", "K-Pop: Why It Took Over the World (K-Pop 如何席捲全球)", "Meme Culture: The Language of the Internet (迷因文化：網路的語言)"
+                    ] 
+                },
+                { 
+                    name: "Category 6: Strange Nature & Weird Facts", 
+                    color: "#2e7d32", // Green
+                    lightColor: "#e8f5e9", 
+                    icon: "🦎", 
+                    titles: [
+                        "Animals That Can Kill You in Seconds (幾秒鐘就能殺死你的動物)", "The Immortal Jellyfish (永生不死的燈塔水母)", "Why Do Cats Purr? (貓咪為什麼會呼嚕？)", "Plants That Eat Meat (食肉植物)", "The Bloop: A Sound from the Deep Ocean (Bloop：來自深海的神秘怪聲)", "Can Cockroaches Survive a Nuke? (蟑螂真的能挺過核爆嗎？)", "The Megalodon: Is It Still Alive? (巨齒鯊：還活著嗎？)", "Why Do We Have Nightmares? (我們為什麼會做惡夢？)", "Is Telepathy Possible? (心電感應是有可能的嗎？)", "10 Facts That Sound Fake But Are True (10 個聽起來像假的但卻是真的事實)"
+                    ] 
+                },
+                { 
+                    name: "Category 7: History, War & Weapons", 
+                    color: "#FF3D00", // Fluorescent Orange (Updated)
+                    lightColor: "#FFEBEE", 
+                    icon: "⚔️", 
+                    titles: [
+                        "Samurai vs. Knights: Who Would Win? (武士 vs 騎士：誰會贏？)", "The Secret Life of Ninjas (忍者的秘密生活)", "Snipers: The Invisible Soldiers (狙擊手：隱形士兵)", "The Trojan Horse: A Genius Trick (特洛伊木馬：天才的詭計)", "Tanks: Monsters of the Battlefield (坦克：戰場巨獸)", "Genghis Khan: The Mongol Empire (成吉思汗：蒙古帝國)", "The Real Pirates of the Caribbean (真實的神鬼奇航海盜)", "Vikings: Raiders or Traders? (維京人：掠奪者還是貿易商？)", "The Great Wall: A Dragon of Stone (萬里長城的秘密)", "Ancient Weapons That Were Ahead of Their Time (超越時代的古代兵器)"
+                    ] 
+                },
+                { 
+                    name: "Category 8: Survival & Adventure", 
+                    color: "#558b2f", // Light Green
+                    lightColor: "#f1f8e9", 
+                    icon: "🏕️", 
+                    titles: [
+                        "Surviving a Shark Attack (遭遇鯊魚攻擊該怎麼辦？)", "Lost in the Amazon Jungle (迷失在亞馬遜叢林)", "Climbing Mount Everest: The Death Zone (攀登聖母峰：死亡地帶)", "Bear Grylls: The Man Who Eats Anything (貝爾：什麼都吃的男人)", "Surviving on a Desert Island (荒島求生指南)", "Deep Sea Exploration: The Last Frontier (深海探險：最後的邊疆)", "What to Do If You Encounter a Bear (遇到熊該怎麼辦？)", "Urban Exploration (Urbex): Risk and Reward (城市廢墟探險：風險與回報)", "Solo Travel Around the World at 16 (16 歲獨自環遊世界)", "Van Life: Living on the Road (車宿生活：住在路上)"
+                    ] 
+                },
+                { 
+                    name: "Category 9: Teen Life, School & Psychology", 
+                    color: "#0091ea", // Blue
+                    lightColor: "#e1f5fe", 
+                    icon: "🧠", 
+                    titles: [
+                        "How to Deal with Bullies (如何應對霸凌)", "The Science of Procrastination (拖延症的科學)", "How to Talk to Anyone (如何跟任何人聊天 - 社交技巧)", "Why Do Parents Not Understand Us? (為什麼父母都不懂我們？)", "Exam Stress: How to Beat It (考試壓力：如何擊敗它)", "Introverts vs. Extroverts (內向者 vs 外向者)", "The Art of Saying \"No\" (拒絕的藝術)", "Does Music Help You Study? (聽音樂真的有助於讀書嗎？)", "First Dates: Dos and Don'ts (初次約會：該做與不該做的事)", "Building Confidence: Fake It Till You Make It (建立自信：假裝久了就是真的)"
+                    ] 
+                },
+                { 
+                    name: "Category 10: Just for Laughs & Daily Hacks", 
+                    color: "#fbc02d", // Yellow
+                    lightColor: "#fffde7", 
+                    icon: "😂", 
+                    titles: [
+                        "World's Dumbest Criminals (世界上最笨的罪犯)", "How to Open a Bottle Without an Opener (沒有開瓶器怎麼開瓶子)", "Life Hacks for Lazy Students (懶惰學生的生活駭客技巧)", "The History of Pizza (披薩的歷史)", "Weird Laws Around the World (世界各地的怪異法律)", "How to Tie a Tie (Step by Step) (如何打領帶)", "Why Do We Yawn? (我們為什麼會打哈欠？)", "Optical Illusions That Will Trick Your Brain (欺騙大腦的視錯覺)", "The Most Boring Job in the World (世界上最無聊的工作)", "Advice to My 13-Year-Old Self (給 13 歲自己的建議)"
+                    ] 
+                },
+                { 
+                    name: "Category 11: Money, Hustle & Future Careers", 
+                    color: "#00c853", // Green Accent
+                    lightColor: "#e8f5e9", 
+                    icon: "💰", 
+                    titles: [
+                        "How YouTubers Make Money (YouTuber 到底是怎麼賺錢的？)", "What is Cryptocurrency? (什麼是加密貨幣？簡單搞懂比特幣)", "The Story of Nike (Nike 的品牌傳奇：Just Do It)", "How to Save Money as a Teen (青少年存錢攻略)", "The Most Expensive NFT Ever Sold (史上最貴的 NFT 是一張圖？)", "Elon Musk’s Business Empire (伊隆·馬斯克的商業帝國)", "What is the Stock Market? (股市是什麼？像遊戲一樣的交易市場)", "Side Hustles for Students (學生可以做的副業)", "Why is iPhone So Expensive? (為什麼 iPhone 賣這麼貴？)", "Rich Dad Poor Dad: Key Lessons (《富爸爸，窮爸爸》的核心觀念)"
+                    ] 
+                },
+                { 
+                    name: "Category 12: Extreme Geography & Earth Mysteries", 
+                    color: "#00838f", // Cyan/Teal
+                    lightColor: "#e0f7fa", 
+                    icon: "🌍", 
+                    titles: [
+                        "The Most Dangerous Road in the World (世界上最危險的公路：北永加斯路)", "Snake Island: Humans Forbidden (蛇島：人類禁地)", "The Door to Hell: Burning for Decades (地獄之門：燃燒數十年的大坑)", "Point Nemo: The Loneliest Place on Earth (尼莫點：地球上最孤獨的地方)", "Why Antarctica is Actually a Desert (為什麼南極其實是沙漠？)", "The Mariana Trench: Bottom of the World (馬里亞納海溝：世界的底端)", "The Dead Sea is Dying (死海正在死去？)", "Mount Thor: The Greatest Drop on Earth (索爾山：地球上最大的垂直落差)", "Blood Falls: A Mystery in Antarctica (血瀑布：南極的神秘紅流)", "Is Atlantis Real? Searching for the Lost City (亞特蘭提斯是真的嗎？尋找失落之城)"
+                    ] 
+                },
+                { 
+                    name: "Category 13: Vehicles, Machines & Speed", 
+                    color: "#304ffe", // Indigo Accent
+                    lightColor: "#e8eaf6", 
+                    icon: "🏎️", 
+                    titles: [
+                        "Bugatti Chiron: Engineering Marvel (布加迪 Chiron：工程奇蹟)", "How Jet Engines Work (噴射引擎是如何運作的？)", "Ferrari vs. Lamborghini: The Rivalry (法拉利 vs 藍寶堅尼：宿敵的故事)", "Self-Driving Cars: Safe or Scary? (自動駕駛汽車：安全還是恐怖？)", "The Lockheed SR-71 Blackbird: A Legend of the Cold War (黑鳥傳奇)", "Superyachts: Floating Palaces (超級遊艇：海上的移動皇宮)", "The Concorde: Supersonic Travel (協和號：超音速客機的傳奇)", "Monster Trucks: Big Wheels, Big Power (怪獸卡車：大輪子的破壞力)", "How Maglev Trains Float (磁浮列車為什麼會漂浮？)", "Top Gun: Real Fighter Jets (捍衛戰士：真實的戰鬥機)"
+                    ] 
+                },
+                { 
+                    name: "Category 14: Food Science & Weird Cuisine", 
+                    color: "#e64a19", // Deep Orange
+                    lightColor: "#fbe9e7", 
+                    icon: "🍔", 
+                    titles: [
+                        "The World’s Hottest Pepper (世界上最辣的辣椒：卡羅萊納死神)", "Why Does Durian Smell Bad? (為什麼榴槤聞起來這麼臭？)", "Space Food: What Astronauts Eat (太空食物：太空人到底吃什麼？)", "Fast Food Secrets They Don't Tell You (速食店不告訴你的秘密)", "Insects: The Future of Food? (吃蟲：人類未來的食物來源？)", "Why Do We Get Brain Freeze? (吃冰為什麼會頭痛？)", "The Most Expensive Pizza in the World (世界上最貴的披薩)", "Coffee: The Fuel of the Modern World (咖啡：現代世界的燃料)", "Coca-Cola vs. Pepsi: The Cola Wars (可口可樂 vs 百事可樂：可樂大戰)", "Why Do Onions Make You Cry? (為什麼切洋蔥會流淚？)"
+                    ] 
+                },
+                { 
+                    name: "Category 15: Savage Wildlife & Animal Superpowers", 
+                    color: "#827717", // Lime
+                    lightColor: "#f9fbe7", 
+                    icon: "🦁", 
+                    titles: [
+                        "The Titanoboa: Largest Snake Ever (泰坦巨蟒：史上最大的蛇)", "Hippos: Cute but Deadly (河馬：可愛但致命的殺手)", "The Mantis Shrimp: Super Punch (雀尾螳螂蝦：擁有超強拳擊力)", "Orcas: The Wolves of the Sea (虎鯨：海中的狼群戰術)", "The Pistol Shrimp: Louder Than a Gun (槍蝦：比槍聲還大聲的攻擊)", "How Wolves Changed Rivers (Yellowstone) (狼群如何改變河流：黃石公園的奇蹟)", "The Mimic Octopus: Master of Disguise (擬態章魚：偽裝大師)", "The Pufferfish: Deadly Delicacy (河豚：致命的美味)", "Electric Eels: Living Batteries (電鰻：活生生的電池)", "The Platypus: Nature’s Weirdest Creation (鴨嘴獸：大自然最怪異的創造)"
+                    ] 
+                }
+            ];
+
+            const result = [];
+            let currentId = 1;
+
+            sections.forEach(sec => {
+                const sectionItems = [];
+                
+                sec.titles.forEach((title, index) => {
+                    sectionItems.push({
+                        id: currentId,
+                        code: `English-Reading-Quiz-${currentId}`,
+                        title: title,
+                        href: `English-Reading-Quiz-${currentId}.html`
+                    });
+                    currentId++;
+                });
+
+                result.push({
+                    title: sec.name,
+                    color: sec.color,
+                    lightColor: sec.lightColor,
+                    icon: sec.icon,
+                    items: sectionItems
+                });
+            });
+
+            return result;
+        };
+
+        const RAW_DATA = generateRawData();
+        const TOTAL_ITEMS = 150; 
+
+        // ==========================================
+        // 設定已完成可閱讀的文章編號 (在此處新增號碼以解鎖文章)
+        // ==========================================
+        const UNLOCKED_IDS = [1, 3, 12, 14, 24, 29, 57, 69, 73, 116, 120, 121, 122, 123, 125, 126, 127, 129, 130];
+
+        // ==========================================
+        // 3. React Components
+        // ==========================================
+
+        const { useState, useEffect, useMemo } = React;
+
+        // New Component: AppCard (Handles Individual Image Loading)
+        const AppCard = ({ item, section, isDone, isUnlocked, toggleProgress }) => {
+            const [imageError, setImageError] = useState(false);
+
+            // Construct image path: images/p{id}.jpg
+            // Example: images/p73.jpg for ID 73
+            const imgSrc = `images/p${item.id}.jpg`;
+
+            return (
+                <a 
+                    href={isUnlocked ? item.href : '#'}
+                    target={isUnlocked ? "_blank" : "_self"}
+                    className={`app-card ${isDone ? 'completed' : ''} ${!isUnlocked ? 'card-locked' : ''} group`}
+                    style={{
+                        // Dynamic Style Logic
+                        borderTopColor: section.color,
+                        border: isDone ? `4px solid ${section.color}` : `1px solid rgba(0,0,0,0.05)`,
+                        borderTop: isDone ? `4px solid ${section.color}` : `6px solid ${section.color}`,
+                        boxShadow: isDone ? `0 0 20px ${section.color}, 0 0 45px ${section.color}99` : undefined,
+                        zIndex: isDone ? 10 : 1
+                    }}
+                >
+                    <div 
+                        className={`card-checkbox ${isDone ? 'checked' : ''}`} 
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            if(isUnlocked) toggleProgress(item.code);
+                        }}
+                        title={isDone ? "Mark as Incomplete" : "Mark as Complete"}
+                        style={{
+                            backgroundColor: isDone ? section.color : 'white',
+                            borderColor: isDone ? section.color : '#ddd',
+                            zIndex: 20
+                        }}
+                    >
+                        {isDone && <span>✓</span>}
+                    </div>
+
+                    {/* Image Logic: Try loading image as large rectangle, fallback to icon on error */}
+                    {!imageError ? (
+                        // Rectangle Image Mode (Max width within padding)
+                        <div className="w-full h-40 mb-4 rounded-lg overflow-hidden shadow-sm">
+                            <img 
+                                src={imgSrc}
+                                alt={item.title}
+                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                onError={() => setImageError(true)}
+                            />
+                        </div>
+                    ) : (
+                        // Fallback Icon (Original Circle)
+                        <div 
+                            className="card-icon-wrapper"
+                            style={{ 
+                                color: section.color, 
+                                backgroundColor: section.lightColor 
+                            }}
+                        >
+                            {section.icon}
+                        </div>
+                    )}
+                    
+                    <div className="card-title" style={{ color: section.color }}>
+                        {item.title}
+                    </div>
+                    
+                    <div className="card-desc">
+                        {item.code} {isUnlocked ? "" : "(Coming Soon)"}
+                    </div>
+                </a>
+            );
+        };
+
+        const StatusLight = ({ status }) => {
+            let dotClass = 'status-loading';
+            let text = 'Connecting...';
+
+            if (status === 'success') {
+                dotClass = 'status-success';
+                text = 'Synced';
+            } else if (status === 'error') {
+                dotClass = 'status-error';
+                text = 'Sync Failed';
+            } else if (status === 'loading') {
+                dotClass = 'status-loading';
+                text = 'Loading...';
+            } else {
+                dotClass = ''; 
+                text = 'Offline Mode';
+            }
+
+            return (
+                <div className="flex items-center text-xs text-gray-500 bg-white px-3 py-1 rounded-full shadow-sm border border-gray-100">
+                    <span className={`status-dot ${dotClass}`}></span>
+                    {text}
+                </div>
+            );
+        };
+
+        const App = () => {
+            // UI States
+            const [currentUser, setCurrentUser] = useState(null); 
+            const [allUsers, setAllUsers] = useState([]);
+            const [localProgress, setLocalProgress] = useState({}); 
+            const [loginName, setLoginName] = useState("");
+            const [showLogin, setShowLogin] = useState(false);
+            
+            // System States
+            const [isAuthReady, setIsAuthReady] = useState(false);
+            const [syncStatus, setSyncStatus] = useState("loading"); 
+
+            const completedCount = useMemo(() => {
+                return Object.values(localProgress).filter(v => v === true).length;
+            }, [localProgress]);
+
+            // 1. Init Auth
+            useEffect(() => {
+                if (!firebaseConfig.apiKey) {
+                    setSyncStatus("offline");
+                    const saved = localStorage.getItem('er_local_progress'); 
+                    if (saved) setLocalProgress(JSON.parse(saved));
+                    return;
+                }
+
+                const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        console.log("Firebase Auth Ready:", user.uid);
+                        setIsAuthReady(true);
+                    } else {
+                        console.log("Signing in anonymously...");
+                        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                        if (initialAuthToken) {
+                            signInWithCustomToken(auth, initialAuthToken).catch(e => console.error("Token login failed", e));
+                        } else {
+                            signInAnonymously(auth).catch(e => console.error("Anon login failed", e));
+                        }
+                    }
+                });
+
+                return () => unsubscribeAuth();
+            }, []);
+
+            // 2. Fetch Users
+            useEffect(() => {
+                if (!isAuthReady || !db) return;
+
+                setSyncStatus("loading");
+                const unsubGlobal = onSnapshot(doc(db, COLLECTION_NAME, DOC_GLOBAL), (docSnap) => {
+                    if (docSnap.exists()) {
+                        setAllUsers(docSnap.data().users || []);
+                    } else {
+                        setDoc(doc(db, COLLECTION_NAME, DOC_GLOBAL), { users: [] }, { merge: true });
+                        setAllUsers([]);
+                    }
+                    if (!currentUser) setSyncStatus("success");
+                }, (error) => {
+                    console.error("Fetch users error:", error);
+                    setSyncStatus("error");
+                });
+
+                return () => unsubGlobal();
+            }, [isAuthReady, currentUser]);
+
+            // 3. Fetch User Progress
+            useEffect(() => {
+                if (!currentUser || !isAuthReady || !db) return;
+
+                setSyncStatus('loading');
+                const unsubUser = onSnapshot(doc(db, COLLECTION_NAME, currentUser), (docSnap) => {
+                    if (docSnap.exists()) {
+                        setLocalProgress(docSnap.data().progress || {});
+                    } else {
+                        setLocalProgress({});
+                    }
+                    setSyncStatus('success');
+                }, (err) => {
+                    console.error("Sync progress error:", err);
+                    setSyncStatus('error');
+                });
+
+                return () => unsubUser();
+            }, [currentUser, isAuthReady]);
+
+            const handleLogin = async (name) => {
+                if (!name.trim()) return;
+                const uname = name.trim();
+                
+                if (isAuthReady && db) {
+                    if (!allUsers.includes(uname)) {
+                        try {
+                            await updateDoc(doc(db, COLLECTION_NAME, DOC_GLOBAL), {
+                                users: arrayUnion(uname)
+                            });
+                        } catch (e) {
+                            await setDoc(doc(db, COLLECTION_NAME, DOC_GLOBAL), {
+                                users: arrayUnion(uname)
+                            }, { merge: true });
+                        }
+                    }
+                } else {
+                    console.log("Offline login, local only.");
+                }
+                
+                setCurrentUser(uname);
+                setShowLogin(false);
+                setLoginName("");
+            };
+
+            const toggleProgress = async (code) => {
+                const newVal = !localProgress[code];
+                const newProgress = { ...localProgress, [code]: newVal };
+                
+                setLocalProgress(newProgress);
+
+                if (currentUser && isAuthReady && db) {
+                    try {
+                        setSyncStatus('loading');
+                        await setDoc(doc(db, COLLECTION_NAME, currentUser), {
+                            progress: newProgress,
+                            lastUpdated: new Date()
+                        }, { merge: true });
+                        setSyncStatus('success');
+                    } catch (e) {
+                        console.error("Save failed:", e);
+                        setSyncStatus('error');
+                    }
+                } else {
+                    localStorage.setItem('er_local_progress', JSON.stringify(newProgress)); 
+                }
+            };
+
+            return (
+                <div className="max-w-[1300px] mx-auto relative">
+                    
+                    {/* Header */}
+                    <div className="header mx-auto">
+                        <h1>English Learning HQ</h1>
+                        <div className="flex flex-col items-center gap-4">
+                            <p className="mb-0 text-xl font-medium">Ultimate English Reading Collection</p>
+                            
+                            {!currentUser && allUsers.length > 0 && (
+                                <div className="w-full max-w-3xl my-2 p-4 bg-white/50 rounded-2xl border border-indigo-100">
+                                    <p className="text-center text-indigo-800 mb-3 font-bold text-sm opacity-80">
+                                        ▼ Click name to quick login ▼
+                                    </p>
+                                    <div className="flex flex-wrap justify-center gap-3">
+                                        {allUsers.map(u => (
+                                            <button 
+                                                key={u} 
+                                                onClick={() => handleLogin(u)} 
+                                                className="quick-user-btn"
+                                            >
+                                                👤 {u}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="flex items-center gap-4 mt-2">
+                                <div className="text-lg font-bold text-indigo-900 bg-white px-4 py-1 rounded-full shadow-sm border border-indigo-100">
+                                    Progress: {completedCount} / {TOTAL_ITEMS}
+                                </div>
+                                <StatusLight status={syncStatus} />
+                            </div>
+
+                            <div className="mt-2 flex items-center gap-3">
+                                {currentUser ? (
+                                    <div className="flex items-center gap-2 animate-fade-in">
+                                        <span className="text-base text-gray-600 font-medium">Challenger:</span>
+                                        <span className="font-bold text-lg text-indigo-700 bg-indigo-50 px-4 py-1 rounded-full shadow-sm">{currentUser}</span>
+                                        <button 
+                                            onClick={() => { setCurrentUser(null); setLocalProgress({}); }}
+                                            className="text-sm text-gray-400 hover:text-gray-600 underline ml-2 font-medium"
+                                        >
+                                            Logout
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <button 
+                                        onClick={() => setShowLogin(true)}
+                                        className="text-lg bg-white border-2 border-indigo-300 text-indigo-600 px-6 py-2 rounded-full hover:bg-indigo-50 transition shadow-sm font-bold flex items-center gap-2"
+                                    >
+                                        <span>👤</span> Login to Save
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                        
+                        <div className="mt-8">
+                            <a href="https://nicktsai88.github.io/List/" className="home-btn">
+                                🎁 Back to Learning Toolbox
+                            </a>
+                        </div>
+                    </div>
+
+                    {/* Login Modal */}
+                    {showLogin && (
+                        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 backdrop-blur-sm" onClick={() => setShowLogin(false)}>
+                            <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-sm mx-4 animate-fade-in" onClick={e => e.stopPropagation()}>
+                                <h3 className="text-xl font-bold text-center mb-4 text-indigo-900 font-serif">Login / Create User</h3>
+                                <div className="flex gap-2">
+                                    <input 
+                                        type="text" 
+                                        value={loginName}
+                                        onChange={(e) => setLoginName(e.target.value)}
+                                        placeholder="Enter new name..." 
+                                        className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                                        onKeyDown={(e) => e.key === 'Enter' && handleLogin(loginName)}
+                                    />
+                                    <button 
+                                        onClick={() => handleLogin(loginName)}
+                                        className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-indigo-700 transition"
+                                    >
+                                        Join
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Content Grid */}
+                    <div className="pb-20">
+                        {RAW_DATA.map((section, idx) => (
+                            <div key={idx} className="mb-12">
+                                <div className="section-divider">{section.title}</div>
+                                <div className="app-grid">
+                                    {section.items.map((item) => (
+                                        <AppCard 
+                                            key={item.code}
+                                            item={item}
+                                            section={section}
+                                            isDone={!!localProgress[item.code]}
+                                            isUnlocked={UNLOCKED_IDS.includes(item.id)}
+                                            toggleProgress={toggleProgress}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
