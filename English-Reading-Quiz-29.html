@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>The Mystery of the Nazca Lines: Art for Aliens?</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 防止選取文字，提升 App 體驗 */
+        body {
+            -webkit-user-select: none;
+            user-select: none;
+            overflow: hidden; /* 防止整個畫面捲動 */
+        }
+        
+        /* 動態七彩發光動畫 */
+        @keyframes rainbow-border {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .rainbow-glow-bg {
+            background: linear-gradient(
+                90deg,
+                #ec4899, #f97316, #eab308, #22c55e, #06b6d4, #6366f1, #a855f7, #ec4899
+            );
+            background-size: 300% 300%;
+            animation: rainbow-border 4s linear infinite;
+        }
+    </style>
+</head>
+<body class="w-full h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 font-sans text-slate-800 flex flex-col">
+
+    <!-- 測驗結束畫面 (預設隱藏) -->
+    <div id="finish-screen" class="hidden w-full h-full flex items-center justify-center p-8 md:p-10">
+        <!-- 外部包裹層，用來定位發光效果 -->
+        <div class="relative w-full max-w-4xl">
+            <!-- 動態發光外暈 (Blur) -->
+            <div class="absolute inset-[-4px] md:inset-[-8px] rounded-[3.5rem] rainbow-glow-bg blur-xl opacity-70 z-0"></div>
+            <!-- 動態實體邊框 -->
+            <div class="absolute inset-[-4px] md:inset-[-8px] rounded-[3.5rem] rainbow-glow-bg z-0 shadow-2xl"></div>
+            
+            <!-- 原本的白色主體區塊 -->
+            <div class="relative z-10 bg-white/95 backdrop-blur-md w-full rounded-[3rem] p-12 flex flex-col items-center justify-center text-center">
+                <h1 class="text-5xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 mb-6">測驗結束！</h1>
+                <p class="text-3xl md:text-4xl text-slate-700 mb-10 font-bold">
+                    你的成績：<span id="final-score" class="text-blue-600 font-black text-5xl md:text-6xl">0</span> / <span id="total-score">40</span>
+                </p>
+                <button id="restart-btn" class="px-10 py-5 bg-gradient-to-r from-pink-500 to-orange-400 hover:from-pink-600 hover:to-orange-500 text-white text-3xl font-extrabold rounded-3xl shadow-[0_10px_20px_rgba(244,63,94,0.4)] transition-transform hover:-translate-y-2 active:scale-95 active:translate-y-0">
+                    再玩一次 🚀
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主要測驗畫面 -->
+    <div id="quiz-screen" class="w-full h-full flex flex-col items-center justify-center p-4 md:p-6 lg:p-8">
+        
+        <!-- 主題名稱 (新增) -->
+        <div class="w-full flex-shrink-0 text-center mb-4 md:mb-6 z-10">
+            <h1 class="text-2xl md:text-4xl lg:text-5xl font-black text-white drop-shadow-md tracking-wider inline-block bg-white/20 px-6 py-2 md:px-8 md:py-3 rounded-full backdrop-blur-md border border-white/30 shadow-lg">
+                The Mystery of the Nazca Lines: Art for Aliens?
+            </h1>
+        </div>
+
+        <!-- 外部包裹層，用來定位發光效果 -->
+        <div class="relative w-full max-w-5xl flex-1 max-h-[660px]">
+            
+            <!-- 動態發光外暈 (Blur) -->
+            <div class="absolute inset-[-4px] md:inset-[-8px] rounded-[3rem] rainbow-glow-bg blur-xl opacity-70 z-0"></div>
+            <!-- 動態實體邊框 -->
+            <div class="absolute inset-[-4px] md:inset-[-8px] rounded-[3rem] rainbow-glow-bg z-0 shadow-[0_20px_50px_rgba(0,0,0,0.3)]"></div>
+
+            <!-- 原本的白色主體區塊 -->
+            <div class="absolute inset-0 bg-white/95 backdrop-blur-md rounded-[2.5rem] flex flex-col overflow-hidden z-10">
+                
+                <!-- 上方進度條 -->
+                <div class="w-full h-3 md:h-4 bg-slate-200/50 flex-shrink-0">
+                    <div id="progress-bar" class="h-full bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 transition-all duration-500 ease-out" style="width: 0%;"></div>
+                </div>
+                
+                <!-- 標題與分數資訊 -->
+                <div class="flex justify-between items-center px-6 md:px-10 pt-4 md:pt-6 pb-2 md:pb-4 flex-shrink-0">
+                    <div class="text-xl md:text-2xl font-black text-slate-500 bg-white/80 px-5 md:px-6 py-2 rounded-full shadow-sm">
+                        Question <span id="current-question-num" class="text-indigo-600">1</span> <span class="text-base md:text-lg font-bold mx-1 text-slate-400">of</span> <span id="total-question-num">40</span>
+                    </div>
+                    <div class="text-xl md:text-2xl font-black text-white bg-gradient-to-r from-orange-400 to-pink-500 px-6 md:px-8 py-2 rounded-full shadow-md shadow-pink-500/30">
+                        Score: <span id="score-display">0</span>
+                    </div>
+                </div>
+
+                <!-- 英文單字顯示區 -->
+                <div class="flex-none flex flex-col items-center justify-center px-6 md:px-10 pt-1 pb-2 md:pb-3">
+                    <div class="flex items-center justify-center gap-4">
+                        <h2 id="word-display" class="text-5xl md:text-[4.5rem] lg:text-[5.5rem] font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 tracking-tight text-center break-words select-none drop-shadow-sm leading-normal">
+                            Word
+                        </h2>
+                        <!-- 發音喇叭按鈕 -->
+                        <button id="speaker-btn" onclick="speakWord()" class="p-3 md:p-4 rounded-full bg-white text-indigo-500 hover:text-indigo-600 active:scale-95 transition-all duration-300 shadow-[0_4px_15px_rgba(99,102,241,0.2)] hover:shadow-[0_6px_25px_rgba(99,102,241,0.4)] border-2 border-indigo-50 flex-shrink-0 cursor-pointer flex items-center justify-center relative overflow-hidden">
+                            <div class="absolute inset-0 bg-gradient-to-br from-indigo-50 to-purple-50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7 md:w-9 md:h-9 relative z-10 transition-transform group-active:scale-90">
+                                <path d="M13.5 4.06c0-1.336-1.616-2.005-2.56-1.06l-4.5 4.5H4.508c-1.141 0-2.318.664-2.66 1.905A9.76 9.76 0 001.5 12c0 .898.121 1.768.35 2.595.341 1.24 1.518 1.905 2.659 1.905h1.93l4.5 4.5c.945.945 2.56.276 2.56-1.06V4.06zM18.584 5.106a.75.75 0 011.06 0c3.808 3.807 3.808 9.98 0 13.788a.75.75 0 11-1.06-1.06 8.25 8.25 0 000-11.668.75.75 0 010-1.06z" />
+                                <path d="M15.932 7.757a.75.75 0 011.061 0 4.5 4.5 0 010 6.364.75.75 0 01-1.06-1.061 3 3 0 000-4.243.75.75 0 010-1.06z" />
+                            </svg>
+                        </button>
+                    </div>
+                    <!-- 單字片語區塊 -->
+                    <div id="phrase-display" class="text-2xl md:text-3xl lg:text-4xl font-bold tracking-wide mt-1 md:mt-2 text-center select-none">
+                        phrase
+                    </div>
+                </div>
+
+                <!-- 4選1 選項區塊 -->
+                <div id="options-container" class="flex-1 px-6 md:px-10 w-full z-10 relative pt-0 pb-4">
+                    <div id="options-grid" class="grid grid-cols-2 gap-4 md:gap-6 h-[220px] md:h-[280px]">
+                        <!-- 選項按鈕由 JavaScript 動態生成 -->
+                    </div>
+                </div>
+
+                <!-- 底部浮動的「下一題」提示列 -->
+                <div id="bottom-bar" class="absolute bottom-0 left-0 w-full bg-white/95 backdrop-blur-md border-t-4 border-indigo-100 p-4 md:p-5 flex justify-between items-center transition-transform duration-500 ease-in-out shadow-[0_-10px_30px_rgba(0,0,0,0.15)] z-20 translate-y-full">
+                    <div id="bottom-message" class="flex-1 px-4 md:px-6 text-xl md:text-3xl font-black">
+                        <!-- 訊息由 JavaScript 動態生成 -->
+                    </div>
+                    <button id="next-btn" class="px-6 py-3 md:px-8 md:py-4 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white text-xl md:text-2xl font-extrabold rounded-2xl md:rounded-3xl shadow-[0_10px_20px_rgba(99,102,241,0.4)] transition-transform hover:-translate-y-1 active:scale-95 active:translate-y-0 flex items-center gap-2 md:gap-3">
+                        下一題 ➔
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 全新納斯卡線題庫資料 (40題) ---
+        const rawQuizData = [
+            { word: "activist", answer: "運動人士", distractors: ["藝術家", "政治家", "觀察者"], phrase: "environmental activist (環保運動人士)" },
+            { word: "aerial", answer: "空中的", distractors: ["地下的", "水中的", "陸地的"], phrase: "aerial view (空照圖 / 鳥瞰視野)" },
+            { word: "ancestor", answer: "祖先", distractors: ["後代", "鄰居", "統治者"], phrase: "ancient ancestor (遠古祖先)" },
+            { word: "archaeological", answer: "考古學的", distractors: ["生物學的", "心理學的", "哲學的"], phrase: "archaeological site (考古遺址)" },
+            { word: "arid", answer: "乾燥的", distractors: ["潮濕的", "冰冷的", "肥沃的"], phrase: "arid desert (乾燥的沙漠)" },
+            { word: "astronomical", answer: "天文學的", distractors: ["氣象學的", "地質學的", "生態學的"], phrase: "astronomical calendar (天文日曆)" },
+            { word: "beneath", answer: "在...之下", distractors: ["在...之上", "在...旁邊", "在...之間"], phrase: "buried beneath the sand (埋在沙子之下)" },
+            { word: "breathtaking", answer: "令人嘆為觀止的", distractors: ["平淡無奇的", "令人失望的", "毫無意義的"], phrase: "a breathtaking view (令人嘆為觀止的景色)" },
+            { word: "calendar", answer: "日曆 / 曆法", distractors: ["地圖", "字典", "指南針"], phrase: "a giant calendar (一個巨大的日曆)" },
+            { word: "ceremonial", answer: "儀式的", distractors: ["商業的", "工業的", "娛樂的"], phrase: "ceremonial purpose (儀式目的)" },
+            { word: "civilization", answer: "文明", distractors: ["廢墟", "帝國", "殖民地"], phrase: "ancient civilization (古文明)" },
+            { word: "commercial", answer: "商業的", distractors: ["農業的", "宗教的", "軍事的"], phrase: "commercial flights (商業航班)" },
+            { word: "distinguish", answer: "區分 / 辨別", distractors: ["混合", "隱藏", "模仿"], phrase: "distinguish the shapes (辨別形狀)" },
+            { word: "erosion", answer: "侵蝕", distractors: ["沉積", "爆發", "結冰"], phrase: "wind erosion (風力侵蝕)" },
+            { word: "existence", answer: "存在", distractors: ["消失", "幻覺", "死亡"], phrase: "prove its existence (證明它的存在)" },
+            { word: "extraterrestrial", answer: "外星的", distractors: ["本土的", "海洋的", "人造的"], phrase: "extraterrestrial beings (外星生物)" },
+            { word: "fascinate", answer: "使...著迷", distractors: ["使...厭惡", "使...疲倦", "使...驚嚇"], phrase: "fascinate the world (讓世界著迷)" },
+            { word: "feat", answer: "壯舉", distractors: ["失敗", "錯誤", "意外"], phrase: "an incredible feat (一項不可思議的壯舉)" },
+            { word: "geoglyph", answer: "地畫", distractors: ["壁畫", "雕像", "建築"], phrase: "Nazca geoglyph (納斯卡地畫)" },
+            { word: "geometric", answer: "幾何的", distractors: ["隨機的", "有機的", "抽象的"], phrase: "geometric patterns (幾何圖案)" },
+            { word: "heritage", answer: "遺產", distractors: ["債務", "稅收", "投資"], phrase: "cultural heritage (文化遺產)" },
+            { word: "illegal", answer: "非法的", distractors: ["合理的", "道德的", "傳統的"], phrase: "illegal activity (非法活動)" },
+            { word: "ingenuity", answer: "獨創性 / 巧妙", distractors: ["愚蠢", "懶惰", "模仿"], phrase: "human ingenuity (人類的獨創性)" },
+            { word: "mystery", answer: "謎 / 神秘的事物", distractors: ["真相", "常識", "定理"], phrase: "an unsolved mystery (一個未解之謎)" },
+            { word: "oxidize", answer: "氧化", distractors: ["蒸發", "凝固", "溶解"], phrase: "oxidize in the sun (在陽光下氧化)" },
+            { word: "preserve", answer: "保存 / 保護", distractors: ["摧毀", "污染", "遺忘"], phrase: "preserve the lines (保存這些線條)" },
+            { word: "procession", answer: "隊伍 / 行列", distractors: ["暴動", "逃亡", "孤立"], phrase: "a religious procession (宗教遊行隊伍)" },
+            { word: "proposed", answer: "被提議的", distractors: ["被拒絕的", "被遺忘的", "被證實的"], phrase: "a proposed theory (一個被提出的理論)" },
+            { word: "reject", answer: "拒絕", distractors: ["接受", "讚賞", "鼓勵"], phrase: "reject the idea (拒絕這個想法)" },
+            { word: "ritual", answer: "儀式", distractors: ["遊戲", "競賽", "實驗"], phrase: "a sacred ritual (神聖的儀式)" },
+            { word: "sacred", answer: "神聖的", distractors: ["邪惡的", "世俗的", "凡人的"], phrase: "a sacred place (一個神聖的地方)" },
+            { word: "scale", answer: "規模 / 比例", distractors: ["顏色", "重量", "溫度"], phrase: "on a massive scale (巨大的規模)" },
+            { word: "scarce", answer: "缺乏的 / 稀少的", distractors: ["充足的", "泛濫的", "無限的"], phrase: "water is scarce (水資源稀缺)" },
+            { word: "sensational", answer: "轟動的 / 譁眾取寵的", distractors: ["平淡的", "客觀的", "理性的"], phrase: "sensational news (轟動的新聞)" },
+            { word: "spiral", answer: "螺旋", distractors: ["直線", "網狀", "方格"], phrase: "a spiral shape (螺旋狀)" },
+            { word: "squatter", answer: "擅自佔地者", distractors: ["守衛", "探險家", "考古學家"], phrase: "illegal squatter (非法的擅自佔地者)" },
+            { word: "testament", answer: "證明 / 證據", distractors: ["謊言", "猜測", "謠言"], phrase: "a testament to their skill (他們技術的證明)" },
+            { word: "theory", answer: "理論", distractors: ["事實", "實驗", "工具"], phrase: "an alien theory (一個外星人理論)" },
+            { word: "trapezoid", answer: "梯形", distractors: ["圓形", "三角形", "橢圓形"], phrase: "a large trapezoid (一個大梯形)" },
+            { word: "trench", answer: "溝渠", distractors: ["高塔", "橋樑", "牆壁"], phrase: "dig a trench (挖一條溝渠)" }
+        ];
+
+        // --- 洗牌演算法 (Fisher-Yates) ---
+        function shuffleArray(array) {
+            let newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        // --- 狀態變數 ---
+        let questions = [];
+        let currentIndex = 0;
+        let score = 0;
+        let selectedAnswer = null;
+
+        // --- DOM 元素參考 ---
+        const ui = {
+            quizScreen: document.getElementById('quiz-screen'),
+            finishScreen: document.getElementById('finish-screen'),
+            progressBar: document.getElementById('progress-bar'),
+            currentQuestionNum: document.getElementById('current-question-num'),
+            totalQuestionNum: document.getElementById('total-question-num'),
+            scoreDisplay: document.getElementById('score-display'),
+            wordDisplay: document.getElementById('word-display'),
+            phraseDisplay: document.getElementById('phrase-display'),
+            optionsGrid: document.getElementById('options-grid'),
+            optionsContainer: document.getElementById('options-container'),
+            bottomBar: document.getElementById('bottom-bar'),
+            bottomMessage: document.getElementById('bottom-message'),
+            nextBtn: document.getElementById('next-btn'),
+            restartBtn: document.getElementById('restart-btn'),
+            finalScore: document.getElementById('final-score'),
+            totalScore: document.getElementById('total-score')
+        };
+
+        // 四種按鈕基礎顏色樣式
+        const defaultColorClasses = [
+            "bg-pink-50 border-pink-400 text-pink-700 hover:bg-pink-100 hover:shadow-pink-300/50 cursor-pointer active:scale-95",
+            "bg-amber-50 border-amber-400 text-amber-700 hover:bg-amber-100 hover:shadow-amber-300/50 cursor-pointer active:scale-95",
+            "bg-emerald-50 border-emerald-400 text-emerald-700 hover:bg-emerald-100 hover:shadow-emerald-300/50 cursor-pointer active:scale-95",
+            "bg-indigo-50 border-indigo-400 text-indigo-700 hover:bg-indigo-100 hover:shadow-indigo-300/50 cursor-pointer active:scale-95"
+        ];
+        const baseBtnClasses = "flex items-center justify-center text-2xl md:text-3xl lg:text-4xl font-bold rounded-[1.5rem] border-[4px] md:border-[5px] transition-all duration-300 p-4 md:p-6 select-none transform hover:-translate-y-1 shadow-md hover:shadow-xl";
+
+        // --- 遊戲邏輯 ---
+
+        function startQuiz() {
+            // 洗牌題目與選項
+            questions = shuffleArray(rawQuizData).map(q => ({
+                ...q,
+                options: shuffleArray([q.answer, ...q.distractors])
+            }));
+            
+            currentIndex = 0;
+            score = 0;
+            selectedAnswer = null;
+            
+            ui.totalQuestionNum.textContent = questions.length;
+            ui.totalScore.textContent = questions.length;
+            
+            ui.finishScreen.classList.add('hidden');
+            ui.quizScreen.classList.remove('hidden');
+            
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const currentQ = questions[currentIndex];
+            selectedAnswer = null;
+            
+            // 更新進度與分數
+            const progressPercentage = (currentIndex / questions.length) * 100;
+            ui.progressBar.style.width = `${progressPercentage}%`;
+            ui.currentQuestionNum.textContent = currentIndex + 1;
+            ui.scoreDisplay.textContent = score;
+            
+            // 更新單字與片語
+            ui.wordDisplay.textContent = currentQ.word;
+            
+            // 利用正規表達式分離英文片語與中文解釋
+            const phraseMatch = currentQ.phrase.match(/(.+?)\s*\((.+?)\)/);
+            const enText = phraseMatch ? phraseMatch[1] : currentQ.phrase;
+            const zhText = phraseMatch ? `(${phraseMatch[2]})` : '';
+            
+            // 初始狀態只顯示英文(深灰色)，中文部分設為透明隱藏 (opacity-0)，保留排版空間不跳動
+            ui.phraseDisplay.innerHTML = `<span class="text-slate-600">${enText}</span> <span id="phrase-zh" class="opacity-0 transition-opacity duration-500 text-indigo-600 ml-1 md:ml-2">${zhText}</span>`;
+            
+            // 隱藏底部欄位
+            ui.bottomBar.classList.add('translate-y-full');
+            ui.bottomBar.classList.remove('translate-y-0');
+            
+            // 渲染選項
+            ui.optionsGrid.innerHTML = '';
+            currentQ.options.forEach((option, idx) => {
+                const btn = document.createElement('div');
+                btn.className = `${baseBtnClasses} ${defaultColorClasses[idx]}`;
+                btn.textContent = option;
+                
+                // 綁定點擊事件
+                btn.onclick = () => handleOptionClick(option, btn);
+                ui.optionsGrid.appendChild(btn);
+            });
+        }
+
+        function handleOptionClick(clickedOption, clickedBtn) {
+            // 防止重複作答
+            if (selectedAnswer !== null) return;
+            selectedAnswer = clickedOption;
+            
+            const currentQ = questions[currentIndex];
+            const isCorrect = clickedOption === currentQ.answer;
+            
+            if (isCorrect) {
+                score++;
+                ui.scoreDisplay.textContent = score;
+                ui.bottomMessage.innerHTML = `<span class="text-green-500 flex items-center gap-2 md:gap-3 drop-shadow-sm">✨ 太棒了！答對了！</span>`;
+            } else {
+                ui.bottomMessage.innerHTML = `<span class="text-red-500 flex items-center gap-2 md:gap-3 drop-shadow-sm">Oops! 正確答案是「${currentQ.answer}」</span>`;
+            }
+
+            // 更新所有按鈕的樣式
+            const allBtns = ui.optionsGrid.children;
+            for (let i = 0; i < allBtns.length; i++) {
+                const btn = allBtns[i];
+                const optionText = btn.textContent;
+                
+                // 重置所有預設樣式
+                btn.className = baseBtnClasses;
+                
+                if (optionText === currentQ.answer) {
+                    btn.className += " bg-green-500 border-green-600 text-white shadow-xl shadow-green-400/60 scale-[1.03] z-10";
+                } else if (optionText === clickedOption && !isCorrect) {
+                    btn.className += " bg-red-500 border-red-600 text-white shadow-inner scale-95 opacity-90";
+                } else {
+                    btn.className += " bg-slate-100 border-slate-200 text-slate-400 opacity-50 grayscale cursor-default";
+                }
+            }
+
+            // 作答後，顯示中文片語解釋
+            const phraseZhEl = document.getElementById('phrase-zh');
+            if (phraseZhEl) {
+                phraseZhEl.classList.remove('opacity-0');
+            }
+
+            // 顯示底部欄位
+            ui.bottomBar.classList.remove('translate-y-full');
+            ui.bottomBar.classList.add('translate-y-0');
+        }
+
+        function handleNextQuestion() {
+            if (currentIndex + 1 < questions.length) {
+                currentIndex++;
+                renderQuestion();
+            } else {
+                // 測驗結束
+                ui.quizScreen.classList.add('hidden');
+                ui.finishScreen.classList.remove('hidden');
+                ui.finalScore.textContent = score;
+                ui.progressBar.style.width = '100%'; // 填滿進度條
+            }
+        }
+
+        // --- 綁定按鈕事件 ---
+        ui.nextBtn.addEventListener('click', handleNextQuestion);
+        ui.restartBtn.addEventListener('click', startQuiz);
+
+        // --- 發音功能 ---
+        let voices = [];
+        let preferredVoice = null;
+
+        function loadVoices() {
+            voices = window.speechSynthesis.getVoices();
+            preferredVoice = voices.find(voice => 
+                (voice.lang === 'en-US' || voice.lang === 'en_US') && 
+                (voice.name.includes('Female') || voice.name.includes('Samantha') || voice.name.includes('Zira') || voice.name.includes('Aria') || voice.name.includes('Victoria'))
+            );
+            
+            if (!preferredVoice) {
+                preferredVoice = voices.find(voice => voice.name === 'Google US English');
+            }
+            if (!preferredVoice) {
+                preferredVoice = voices.find(voice => voice.lang === 'en-US' || voice.lang === 'en_US');
+            }
+        }
+
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = loadVoices;
+        }
+        loadVoices(); 
+
+        function speakWord() {
+            const currentQ = questions[currentIndex];
+            if (!currentQ) return;
+            
+            window.speechSynthesis.cancel();
+            
+            const utterance = new SpeechSynthesisUtterance(currentQ.word);
+            utterance.lang = 'en-US'; 
+            utterance.rate = 0.9;     
+            
+            if (preferredVoice) {
+                utterance.voice = preferredVoice;
+            }
+
+            const speakerBtn = document.getElementById('speaker-btn');
+            if (speakerBtn) {
+                speakerBtn.classList.add('scale-110');
+                setTimeout(() => speakerBtn.classList.remove('scale-110'), 300);
+            }
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // --- 初始化遊戲 ---
+        window.onload = startQuiz;
+
+    </script>
+</body>
+</html>
