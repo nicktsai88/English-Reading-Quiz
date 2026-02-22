@@ -49,24 +49,14 @@
             </div>
 
             <!-- 英文單字顯示區 -->
-            <div class="flex-none flex flex-col items-center justify-center px-10 pt-2 md:pt-4 pb-4 md:pb-6">
-                <div class="flex items-center justify-center gap-4 md:gap-6">
-                    <h2 id="word-display" class="text-6xl md:text-[6rem] font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 tracking-tight text-center break-words select-none drop-shadow-sm leading-normal pb-4">
-                        Word
-                    </h2>
-                    <!-- 發音喇叭按鈕 (美化版) -->
-                    <button id="speaker-btn" onclick="speakWord()" class="mt-[-1rem] group p-3 md:p-5 rounded-full bg-white text-indigo-500 hover:text-indigo-600 active:scale-95 transition-all duration-300 shadow-[0_4px_15px_rgba(99,102,241,0.2)] hover:shadow-[0_6px_25px_rgba(99,102,241,0.4)] border-2 border-indigo-50 flex-shrink-0 cursor-pointer flex items-center justify-center relative overflow-hidden">
-                        <div class="absolute inset-0 bg-gradient-to-br from-indigo-50 to-purple-50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-8 h-8 md:w-10 md:h-10 relative z-10 transition-transform group-active:scale-90">
-                            <path d="M13.5 4.06c0-1.336-1.616-2.005-2.56-1.06l-4.5 4.5H4.508c-1.141 0-2.318.664-2.66 1.905A9.76 9.76 0 001.5 12c0 .898.121 1.768.35 2.595.341 1.24 1.518 1.905 2.659 1.905h1.93l4.5 4.5c.945.945 2.56.276 2.56-1.06V4.06zM18.584 5.106a.75.75 0 011.06 0c3.808 3.807 3.808 9.98 0 13.788a.75.75 0 11-1.06-1.06 8.25 8.25 0 000-11.668.75.75 0 010-1.06z" />
-                            <path d="M15.932 7.757a.75.75 0 011.061 0 4.5 4.5 0 010 6.364.75.75 0 01-1.06-1.061 3 3 0 000-4.243.75.75 0 010-1.06z" />
-                        </svg>
-                    </button>
-                </div>
+            <div class="flex-1 flex flex-col items-center justify-center px-10">
+                <h2 id="word-display" class="text-6xl md:text-[6rem] font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 tracking-tight text-center break-words select-none mb-4 drop-shadow-sm leading-normal pb-4">
+                    Word
+                </h2>
             </div>
 
             <!-- 4選1 選項區塊 -->
-            <div id="options-container" class="flex-1 px-10 w-full z-10 relative pt-2">
+            <div id="options-container" class="px-10 w-full z-10 relative transition-all duration-500 ease-in-out pb-8 md:pb-12">
                 <div id="options-grid" class="grid grid-cols-2 gap-5 md:gap-8 h-[240px] md:h-[280px]">
                     <!-- 選項按鈕由 JavaScript 動態生成 -->
                 </div>
@@ -189,9 +179,10 @@
             // 更新單字
             ui.wordDisplay.textContent = currentQ.word;
             
-            // 隱藏底部欄位 (移除了原本調整間距的程式碼)
+            // 隱藏底部欄位與重置間距
             ui.bottomBar.classList.add('translate-y-full');
             ui.bottomBar.classList.remove('translate-y-0');
+            ui.optionsContainer.className = "px-10 w-full z-10 relative transition-all duration-500 ease-in-out pb-8 md:pb-12";
             
             // 渲染選項
             ui.optionsGrid.innerHTML = '';
@@ -244,7 +235,8 @@
                 }
             }
 
-            // 顯示底部欄位 (移除了原本抬升區塊的程式碼)
+            // 顯示底部欄位並抬升選項區塊
+            ui.optionsContainer.className = "px-10 w-full z-10 relative transition-all duration-500 ease-in-out pb-32 md:pb-40";
             ui.bottomBar.classList.remove('translate-y-full');
             ui.bottomBar.classList.add('translate-y-0');
         }
@@ -265,61 +257,6 @@
         // --- 綁定按鈕事件 ---
         ui.nextBtn.addEventListener('click', handleNextQuestion);
         ui.restartBtn.addEventListener('click', startQuiz);
-
-        // --- 發音功能 ---
-        let voices = [];
-        let preferredVoice = null;
-
-        function loadVoices() {
-            voices = window.speechSynthesis.getVoices();
-            // 嘗試尋找美國女性聲音 (涵蓋 Mac、Windows、Android 的常見女聲名稱)
-            preferredVoice = voices.find(voice => 
-                (voice.lang === 'en-US' || voice.lang === 'en_US') && 
-                (voice.name.includes('Female') || voice.name.includes('Samantha') || voice.name.includes('Zira') || voice.name.includes('Aria') || voice.name.includes('Victoria'))
-            );
-            
-            // 如果沒找到特定女聲，退而求其次找 Google 預設美式發音 (通常也是女聲)
-            if (!preferredVoice) {
-                preferredVoice = voices.find(voice => voice.name === 'Google US English');
-            }
-            
-            // 若都沒找到，找系統預設的任何一個美國腔
-            if (!preferredVoice) {
-                preferredVoice = voices.find(voice => voice.lang === 'en-US' || voice.lang === 'en_US');
-            }
-        }
-
-        // 某些瀏覽器需要等事件觸發才能載入聲音列表
-        if (speechSynthesis.onvoiceschanged !== undefined) {
-            speechSynthesis.onvoiceschanged = loadVoices;
-        }
-        loadVoices(); // 先手動執行一次
-
-        function speakWord() {
-            const currentQ = questions[currentIndex];
-            if (!currentQ) return;
-            
-            // 每次發言前先取消前一次的發言，避免連續點擊造成語音排隊卡住
-            window.speechSynthesis.cancel();
-            
-            const utterance = new SpeechSynthesisUtterance(currentQ.word);
-            utterance.lang = 'en-US'; // 設定為美式英文
-            utterance.rate = 0.9;     // 語速稍微放慢一點，讓學生聽得更清楚
-            
-            // 如果有找到理想的女聲，就套用上去
-            if (preferredVoice) {
-                utterance.voice = preferredVoice;
-            }
-
-            // 讓喇叭圖示產生一點按壓的視覺回饋
-            const speakerBtn = document.getElementById('speaker-btn');
-            if (speakerBtn) {
-                speakerBtn.classList.add('scale-110');
-                setTimeout(() => speakerBtn.classList.remove('scale-110'), 300);
-            }
-
-            window.speechSynthesis.speak(utterance);
-        }
 
         // --- 初始化遊戲 ---
         window.onload = startQuiz;
